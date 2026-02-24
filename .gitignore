@@ -1,0 +1,15 @@
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# DBeaver workspace / metadata
+.metadata/
+.dbeaver/
+
+# OS/editor
+Thumbs.db
+.DS_Store
+.vscode/
