@@ -1,20 +1,8 @@
-# 3020-HDL_Operations
-ERD Database SQLite Project (labs)
-
-PROJECT/GITHUB README PAGE LINK: https://3020-hdl.netlify.app/
-
-
-
-
-
-
-
-
-
-
-
-
-# 3020-HDL Operations
+# 3020-HDL Operations: 
+                 Expanded HTML README/HELP File: 
+                 
+*****************  https://3020-hdl.netlify.app/ *****************
+                        LINK ^^^
 
 **CSCI 3020 · SQLite Database Project**
 
@@ -37,7 +25,7 @@ db/                   ← your local .db lives here (never committed)
 
 1. **Never commit `.db` files** — they're binary and don't merge.
 2. **Schema changes go in `sql/00_schema.sql`** — edit the file, rebuild, commit. Don't edit the DB directly.
-3. **Update the ERD after any schema change** — export from DBeaver → `erd/erd.png` → commit it with the schema.
+3. **Update the ERD after any schema change** — export from DB Browser / dbdiagram.io → `erd/erd.png` → commit it with the schema.
 
 ---
 
@@ -152,7 +140,7 @@ Make sure `.gitignore` includes `*.db`, `*.db-wal`, `*.db-shm`.
 → Close and re-open the `.db` file: **File → Close Database**, then **File → Open Database** again.
 
 **Pulled and DB looks wrong**
-→ Run `.\scripts\rebuild.ps1` and refresh DBeaver.
+→ Run `.\scripts\rebuild.ps1`, then re-open the `.db` file in DB Browser.
 
 **Merge conflict in `00_schema.sql`**
 → Talk to your team, agree on the correct schema, resolve manually, then rebuild.
@@ -168,4 +156,3 @@ Make sure `.gitignore` includes `*.db`, `*.db-wal`, `*.db-shm`.
 - `sql/00_schema.sql`
 - `erd/erd.png` (or `.pdf`)
 - If instructor wants a `.db`: generate it locally and submit directly — **do not commit it**.
-
