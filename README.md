@@ -2,7 +2,7 @@
                  Expanded HTML README/HELP File: 
                  
 *****************  https://3020-hdl.netlify.app/ *****************
-                        LINK ^^^
+                      
 
 **CSCI 3020 · SQLite Database Project**
 
