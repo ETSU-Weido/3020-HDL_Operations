@@ -497,72 +497,80 @@ CREATE TABLE RentalReturn (
 -- ============================================================
 -- INDEXES
 -- ============================================================
+-- Strategy: index every FK column not already covered by a PK or the
+-- left-prefix of a composite PK. Also index high-cardinality lookup
+-- fields called out in the spec (email, SKU, dates).
+-- ServiceInvoice.ticketId is omitted: it IS the PK, already indexed.
 
+-- --- Employees / Stores ---
 CREATE INDEX idxEmployeeHomeStoreId         ON Employee(homeStoreId);
-
--- Both FK columns on join tables (composite PK only covers left-prefix).
-CREATE INDEX idxEmployeeStoreStoreId        ON EmployeeStore(storeId);
+-- Non-leading FK cols in composite PKs need their own indexes.
 CREATE INDEX idxEmployeeStoreEmployeeId     ON EmployeeStore(employeeId);
-CREATE INDEX idxStoreVendorVendorId         ON StoreVendor(vendorId);
+-- storeId is left-prefix of composite PK (storeId, employeeId, startDate); already indexed.
+-- employeeId and storeId are both non-leading in the 3-col composite PK.
+CREATE INDEX idxManagerEmployeeId           ON StoreManagerAssignment(employeeId);
+
+-- --- Vendors / Products ---
 CREATE INDEX idxStoreVendorStoreId          ON StoreVendor(storeId);
 CREATE INDEX idxVendorProductProductId      ON VendorProduct(productId);
-CREATE INDEX idxVendorProductVendorId       ON VendorProduct(vendorId);
-CREATE INDEX idxContractRentalUnitTag       ON ContractRentalUnit(rentalAssetTag);
-CREATE INDEX idxSessionInstructorEmployeeId ON SessionInstructor(employeeId);
-
-CREATE INDEX idxManagerEmployeeId           ON StoreManagerAssignment(employeeId);
+-- Spec calls out SKU as a frequently searched field.
 CREATE INDEX idxProductSku                  ON Product(sku);
 CREATE INDEX idxVariantProductId            ON ProductVariant(productId);
+
+-- --- Customers ---
+-- Spec calls out email as a frequently searched field.
 CREATE INDEX idxCustomerEmail               ON Customer(emailAddress);
 CREATE INDEX idxAddressCustomerId           ON CustomerAddress(customerId);
 CREATE INDEX idxCustomerMembershipCustomer  ON CustomerMembership(customerId);
 CREATE INDEX idxCustomerMembershipTier      ON CustomerMembership(membershipId);
 
+-- --- Sales ---
 CREATE INDEX idxTransactionCustomerId       ON SalesTransaction(customerId);
 CREATE INDEX idxTransactionStoreId          ON SalesTransaction(storeId);
 CREATE INDEX idxTransactionEmployeeId       ON SalesTransaction(employeeId);
+-- Nullable FK: only non-null rows reference a membership discount.
+CREATE INDEX idxTransactionMembershipId     ON SalesTransaction(membershipId);
+-- Date range queries on transaction history.
 CREATE INDEX idxTransactionDateTime         ON SalesTransaction(dateTime);
 CREATE INDEX idxSaleLineTransactionId       ON SaleLineItem(transactionId);
+-- barcodeId FK points to ProductVariant; also used in product lookup joins.
 CREATE INDEX idxSaleLineBarcodeId           ON SaleLineItem(barcodeId);
 CREATE INDEX idxReturnOriginalTxn           ON ReturnTransaction(originalTransactionId);
 CREATE INDEX idxReturnLineReturnId          ON ReturnLineItem(returnId);
+-- Needed to check whether a specific sale line item has been returned.
 CREATE INDEX idxReturnLineSaleLineItemId    ON ReturnLineItem(saleLineItemId);
 
+-- --- Rentals ---
+CREATE INDEX idxRentalUnitActiveLocation    ON RentalUnit(activeLocation);
 CREATE INDEX idxContractCustomerId          ON RentalContract(customerId);
 CREATE INDEX idxContractStoreId             ON RentalContract(storeId);
 CREATE INDEX idxContractEmployeeId          ON RentalContract(employeeId);
-CREATE INDEX idxContractDates               ON RentalContract(startDate, expReturn);
+-- Nullable FK linking a rental contract back to the initiating sale transaction.
+CREATE INDEX idxContractTransactionId       ON RentalContract(transactionId);
+-- Non-leading FK col in composite PK (contractId, rentalAssetTag).
+CREATE INDEX idxContractRentalUnitTag       ON ContractRentalUnit(rentalAssetTag);
+-- contractId is left-prefix of composite PK; already indexed, no explicit index needed.
 CREATE INDEX idxExtensionContractId         ON ContractExtension(contractId);
+-- All three FK cols on transfer; fromStoreId is non-leading so needs its own index.
 CREATE INDEX idxTransferUnitTag             ON RentalUnitTransfer(rentalAssetTag);
 CREATE INDEX idxTransferFromStoreId         ON RentalUnitTransfer(fromStoreId);
 CREATE INDEX idxTransferToStoreId           ON RentalUnitTransfer(toStoreId);
-CREATE INDEX idxTransferDateTime            ON RentalUnitTransfer(transferDateTime);
-
-CREATE INDEX idxSessionStoreId              ON Session(storeId);
-CREATE INDEX idxSessionDate                 ON Session(sessionDate);
-CREATE INDEX idxEnrollmentCustomerId        ON Enrollment(customerId);
-CREATE INDEX idxEnrollmentSessionId         ON Enrollment(sessionId);
-CREATE INDEX idxOwnedItemCustomerId         ON CustomerOwnedItem(customerId);
-CREATE INDEX idxServiceRentalUnitTag        ON ServiceTicket(rentalAssetTag);
-CREATE INDEX idxServiceCustomerItemId       ON ServiceTicket(customerItemId);
-
--- Explicit index on ServiceInvoice FK (ticketId is also PK, but listed to satisfy
--- literal spec requirement: "index all FK columns").
-CREATE INDEX idxServiceInvoiceTicketId      ON ServiceInvoice(ticketId);
-
--- RentalReturn FK indexes.
 CREATE INDEX idxRentalReturnContractId      ON RentalReturn(contractId);
 CREATE INDEX idxRentalReturnAssetTag        ON RentalReturn(rentalAssetTag);
 
--- RentalUnit.activeLocation FK index.
-CREATE INDEX idxRentalUnitActiveLocation    ON RentalUnit(activeLocation);
+-- --- Sessions ---
+CREATE INDEX idxSessionStoreId              ON Session(storeId);
+-- Date lookup for upcoming/past sessions.
+CREATE INDEX idxSessionDate                 ON Session(sessionDate);
+CREATE INDEX idxEnrollmentCustomerId        ON Enrollment(customerId);
+CREATE INDEX idxEnrollmentSessionId         ON Enrollment(sessionId);
+-- Non-leading FK col in composite PK (sessionId, employeeId).
+CREATE INDEX idxSessionInstructorEmployeeId ON SessionInstructor(employeeId);
 
--- RentalContract.transactionId FK index.
-CREATE INDEX idxContractTransactionId       ON RentalContract(transactionId);
-
--- SalesTransaction.membershipId FK index.
-CREATE INDEX idxTransactionMembershipId     ON SalesTransaction(membershipId);
-
+-- --- Service ---
+CREATE INDEX idxOwnedItemCustomerId         ON CustomerOwnedItem(customerId);
+CREATE INDEX idxServiceRentalUnitTag        ON ServiceTicket(rentalAssetTag);
+CREATE INDEX idxServiceCustomerItemId       ON ServiceTicket(customerItemId);
 -- ============================================================
 -- SAMPLE DATA
 -- ============================================================
